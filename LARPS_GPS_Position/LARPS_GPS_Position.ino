@@ -41,13 +41,16 @@ uint8_t packetcounter = 0;
 uint8_t ttl = 5;
 String position = ""; 
 uint32_t timer = millis() + position_update_interval;
-
+uint32_t seed = 0;
+uint16_t random_count = 0;
 
 // Setup routine
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Welcome to LARPS Position Client");
+  stamp(); Serial.println("Welcome to LARPS Position Client");
+  stamp(); Serial.println("Seeding random number generator..");
+  RNG();
     if (!rf95.init()) {                                                   // This inits the radio. The program will fail here if there's a communication issue
     Serial.println(F("SX1276 Failure: init failed."));                  // Print error messages
     Serial.println(F("Check hardware connections. Halting program."));  // Print error messages
@@ -55,8 +58,10 @@ void setup() {
   }
   rf95.setTxPower(23, false);                                           // This is how we set HamShield: LoRa Edition to 1 watt mode using RadioHead
   rf95.setFrequency(frequency);                                           // Set to an open auxiliary frequency
+  rf95.setCADTimeout(10000);                                            // Set CAD timeout to 10 seconds
   stamp(); Serial.print("Transmission interval set to "); 
   Serial.print(position_update_interval,DEC); Serial.println(" Seconds");
+
   stamp(); Serial.println("Collecting GPS data");
   position_update_interval = position_update_interval * 1000;
 }
@@ -77,7 +82,8 @@ void loop() {
                }
                else { position += "NO_POSITION"; }
                stamp(); Serial.print("Message contents: "); Serial.println(position);
-               transmitPositionUpdate();
+               transmitPositionUpdate(); 
+               RNG();
             }
       }
 }
@@ -118,9 +124,11 @@ void transmitPositionUpdate() {
   packet[pktlen] = 0x00;
   packet[PKT_LEN] = pktlen;
   stamp(); Serial.print("packet size of "); Serial.print(pktlen,DEC); Serial.print("..");
-  rf95.send(packet,pktlen);                     
-  rf95.waitPacketSent();
-  Serial.println("sent!"); 
+  if(rf95.waitCAD() == true) { 
+       rf95.send(packet,pktlen);                     
+       rf95.waitPacketSent();
+       Serial.println("sent!"); 
+  } else { Serial.println("FAIL. Channel congestion is too high."); }
   memset(packet,0,len);
 }
 
@@ -132,4 +140,16 @@ void spin() {
   Serial.print("\b"); Serial.print((char)spinner[spinptr]); 
   spinptr++;
   if(spinptr > sizeof(spinner)) { spinptr = 0; } 
+}
+
+// Try to keep things as random as possible
+
+void RNG() {
+  random_count = analogRead(A0);
+  for(int x = 0; x < random_count; x++) { 
+    //digitalWrite(A1,analogRead(A2) % 2);
+    seed = analogRead(A0);
+  }
+  seed = seed ^ micros();
+  randomSeed(seed);
 }
