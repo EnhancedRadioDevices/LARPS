@@ -7,7 +7,7 @@
 RH_RF95 rf95;                                 // Setup RadioHead for SX1276 (HamShield: LoRa Edition)
 
 float frequency = 432.250;                    // LARPS frequency
-uint32_t beacon_interval = 10;                // LARPS beacon interval in seconds
+uint32_t beacon_interval = 300;               // LARPS beacon interval in seconds
 String beacon_text = "Visit http://enhancedradio.com/LARPS/ to learn more about this service"; // LARPS beacon contents
 String callsign = "KC7IBT      ";             // needs to be exactly 12 characters until we write a handler for sub 12 char calls
 
