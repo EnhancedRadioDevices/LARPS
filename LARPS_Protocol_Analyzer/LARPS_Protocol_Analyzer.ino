@@ -28,7 +28,8 @@ bool error_flag = false;
 
 void loop() {
     if (rf95.available()) { 
-         rf95.recv(packet, &len);
+         rf95.recv(packet, len);
+         //Serial.print("length: "); Serial.println(len);
          rssi = rf95.lastRssi();
          snr = rf95.lastSNR();
          if(packet[0] == 0x01) { 
@@ -61,7 +62,8 @@ void loop() {
             if(error_flag == true) { stamp(); Serial.println("Prior packet contains malformed callsigns"); }
          }
          else { stamp(); Serial.print("Packet with invalid version received"); }
-    }
+    memset(packet,0,RH_RF95_MAX_MESSAGE_LEN); }
+    
 }
 
 void stamp() { 
