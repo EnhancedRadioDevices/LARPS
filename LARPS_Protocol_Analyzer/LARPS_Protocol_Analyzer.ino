@@ -7,6 +7,15 @@ RH_RF95 rf95;                                 // Setup RadioHead for SX1276 (Ham
 float frequency = 432.250;
 
 void setup() {
+
+  // Perform reset on SX1276 for HamShield: LoRa Edition (D3)
+  
+  pinMode(3,OUTPUT);
+  digitalWrite(3, LOW);
+  delay(10);
+  digitalWrite(3, HIGH);
+  delay(10);
+  
   Serial.begin(115200);
   Serial.println("Welcome to LARPS Protocol Analyzer");
     if (!rf95.init()) {                                                   // This inits the radio. The program will fail here if there's a communication issue
